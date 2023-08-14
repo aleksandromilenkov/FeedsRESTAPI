@@ -50,7 +50,7 @@ class Feed extends Component {
       page--;
       this.setState({ postPage: page });
     }
-    fetch("http://localhost:8080/feed/posts/")
+    fetch("http://localhost:8080/feed/posts/?page=" + page)
       .then((res) => {
         if (res.status !== 200) {
           throw new Error("Failed to fetch posts.");
@@ -60,7 +60,12 @@ class Feed extends Component {
       })
       .then((resData) => {
         this.setState({
-          posts: resData.posts,
+          posts: resData.posts.map((post) => {
+            return {
+              ...post,
+              imagePath: post.imageUrl,
+            };
+          }),
           totalPosts: resData.totalItems,
           postsLoading: false,
         });
@@ -108,17 +113,15 @@ class Feed extends Component {
     });
     // Set up data (with image!)
     let url = "http://localhost:8080/feed/post";
+    let method = "POST";
     if (this.state.editPost) {
-      url = "URL";
+      url = "http://localhost:8080/feed/post/" + this.state.editPost._id;
+      method = "PUT";
     }
-
+    console.log(method);
     fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        title: postData.title,
-        content: postData.content,
-      }),
+      method: method,
+      body: postData,
     })
       .then((res) => {
         if (res.status !== 200 && res.status !== 201) {
@@ -141,6 +144,7 @@ class Feed extends Component {
               (p) => p._id === prevState.editPost._id
             );
             updatedPosts[postIndex] = post;
+            console.log(updatedPosts[postIndex]);
           } else if (prevState.posts.length < 2) {
             updatedPosts = prevState.posts.concat(post);
           }
@@ -169,7 +173,7 @@ class Feed extends Component {
 
   deletePostHandler = (postId) => {
     this.setState({ postsLoading: true });
-    fetch("URL")
+    fetch("http://localhost:8080/feed/post/" + postId, { method: "DELETE" })
       .then((res) => {
         if (res.status !== 200 && res.status !== 201) {
           throw new Error("Deleting a post failed!");

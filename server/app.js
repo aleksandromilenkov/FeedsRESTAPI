@@ -4,9 +4,31 @@ const mongoose = require("mongoose");
 const feedRoutes = require("./routes/feed");
 const dotenv = require("dotenv");
 const path = require("path");
+const multer = require("multer");
 dotenv.config({ path: "./config.env" });
 const app = express();
 
+// UPLOADING IMAGES:
+const multerStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "./images");
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${Date.now()}--${file.originalname}`);
+  },
+});
+const multerFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith("image")) {
+    cb(null, true);
+  } else {
+    cb(null, false);
+  }
+};
+const upload = multer({
+  storage: multerStorage,
+  fileFilter: multerFilter,
+});
+app.use(upload.single("image"));
 // app.use(bodyParser.urlencoded()); // x-www-form-urlencoded <form>
 app.use(bodyParser.json()); // application/json
 app.use("/images", express.static(path.join(__dirname, "images")));
