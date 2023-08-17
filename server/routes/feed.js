@@ -7,7 +7,7 @@ const router = express.Router();
 
 // GET /feed/posts
 router.get("/posts", isAuth, feedController.getPosts);
-router.get("/post/:postId", feedController.getPost);
+router.get("/post/:postId", isAuth, feedController.getPost);
 
 // POST /feed/post
 router.post(
